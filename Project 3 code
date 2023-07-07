@@ -1,0 +1,67 @@
+-----Where is the best state to invest in for maple syrup----
+
+Select *
+FROM dbo.Domestic_Maple_Syrup_Production
+
+Select State, SUM(Num_of_Taps) as Total_Taps, AVG(Num_of_Taps) as Average_Taps
+FROM dbo.Domestic_Maple_Syrup_Production
+GROUP by State
+ORDER by Total_Taps DESC, State,  Average_Taps
+
+
+Select State, SUM(Production) as Total_P, AVG(Production) as Average_P
+FROM dbo.Domestic_Maple_Syrup_Production
+GROUP by State
+ORDER by Total_P DESC, State, Average_P
+
+Select State, SUM(Production) as Total_P, AVG(Production) as Average_P
+FROM dbo.Domestic_Maple_Syrup_Production
+Where year > '2010'
+GROUP by State
+ORDER by Total_P DESC, State, Average_P
+
+Select State, AVG(Yield_per_Tap) as Average_YPT
+FROM dbo.Domestic_Maple_Syrup_Production
+GROUP by State
+ORDER by Average_YPT DESC, State
+
+Select State, AVG(Value) as Average_V, AVG(Retail_Price) as Average_R
+FROM dbo.Domestic_Maple_Syrup_Production
+GROUP by State
+ORDER by Average_V DESC, State, Average_R
+
+Select State, AVG(Value) as Average_V, AVG(Retail_Price) as Average_R
+FROM dbo.Domestic_Maple_Syrup_Production
+WHERE year > '2010'
+GROUP by State
+ORDER by Average_V DESC, State, Average_R
+
+Select State, AVG(Value) as Average_V, AVG(Retail_Price) as Average_R
+FROM dbo.Domestic_Maple_Syrup_Production
+WHERE year > '2015'
+GROUP by State
+ORDER by Average_V DESC, State, Average_R
+
+
+Select *
+From dbo.Domestic_Maple_Syrup_Production
+Where State = 'Vermont'
+
+Select State, Value, year
+From dbo.Domestic_Maple_Syrup_Production
+ORDER by Value DESC
+
+
+Select State, value, year
+FROM dbo.Domestic_Maple_Syrup_Production
+WHERE year = '2021'
+ORDER by Value DESC
+
+Select State, value, year
+FROM dbo.Domestic_Maple_Syrup_Production
+WHERE year = '2001'
+ORDER by Value DESC
+
+Select State, Production, value
+FROM dbo.Domestic_Maple_Syrup_Production
+ORDER by Value DESC
