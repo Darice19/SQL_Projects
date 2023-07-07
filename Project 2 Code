@@ -1,0 +1,291 @@
+-----How do casual and members use bikes differently?-----
+
+-----Combine all of the data into one table-----
+
+CREATE TABLE ALL_divvy_tripdata (
+ride_id varchar(255),
+rideable_type varchar(255),
+started_at varchar(255),
+ended_at varchar(255),
+start_station_name varchar(255),
+start_station_id varchar(255),
+end_station_name varchar(255),
+end_station_id varchar(255),
+start_lat varchar(255),
+start_lng varchar(255),
+end_lat varchar(255),
+end_lng varchar(255),
+member_casual varchar(255)
+);
+ 
+INSERT INTO dbo.ALL_divvy_tripdata
+SELECT *
+FROM dbo.[1_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[2_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[3_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[4_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[5_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[6_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[7_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[8_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[9_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[10_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[11_2022_divvy_tripdata]
+
+INSERT INTO ALL_divvy_tripdata
+SELECT *
+FROM dbo.[12_2022_divvy_tripdata]
+
+------Find and remove bike trips which do not begin or end at a docking station-----
+
+select *
+FROM ALL_divvy_tripdata
+WHERE started_at is null
+or ended_at is null
+or start_station_name is null
+or start_station_id is null
+or end_station_id is null
+or end_station_name is null
+
+DELETE FROM ALL_divvy_tripdata
+WHERE start_station_name is null and start_station_id is null
+or end_station_id is null and end_station_name is null
+
+----- Add colums for day, month, time of day, and time on bike-----
+ALTER TABLE dbo.ALL_divvy_tripdata
+ADD Day_Of_Week Varchar(255);
+
+UPDATE dbo.ALL_divvy_tripdata
+SET Day_Of_Week = DATENAME(DW,started_at)
+
+ALTER TABLE dbo.ALL_divvy_tripdata
+ADD Time_Of_Ride Varchar(255);
+
+UPDATE dbo.ALL_divvy_tripdata
+SET Time_Of_Ride =
+(CASE 
+WHEN CONVERT(TIME(0),started_at) <= '4:59AM' THEN 'Early Morning'
+WHEN CONVERT(TIME(0),started_at) <= '11:59AM' THEN 'Morning'
+WHEN CONVERT(TIME(0),started_at) <= '4:59PM' THEN 'Afternoon'
+WHEN CONVERT(TIME(0),started_at) <= '8:59PM' THEN 'Evening'
+WHEN CONVERT(TIME(0),started_at) <= '11:59PM' THEN 'Night'
+END 
+)
+
+ALTER TABLE dbo.ALL_divvy_tripdata
+ADD Month_Of_Ride Varchar(255);
+
+UPDATE dbo.ALL_divvy_tripdata
+SET Month_Of_Ride = DATENAME(M,started_at)
+
+ALTER TABLE dbo.ALL_divvy_tripdata
+ADD Total_Time FLOAT(53);
+
+UPDATE dbo.ALL_divvy_tripdata
+SET Total_Time = DATEDIFF(minute,"started_at","ended_at") 
+
+
+
+-----Calculate number of rides by year,month,day of the week, and time of day-----
+SELECT member_casual, COUNT(member_casual)
+FROM dbo.ALL_divvy_tripdata
+GROUP BY member_casual
+ORDER BY member_casual
+
+SELECT member_casual, Month_Of_Ride, COUNT(member_casual) AS Monthly_Rides
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+Month_Of_Ride = 'January' or
+Month_Of_Ride = 'February' or
+Month_Of_Ride = 'March' or
+Month_Of_Ride = 'April' or
+Month_Of_Ride = 'May' or
+Month_Of_Ride = 'June' or
+Month_Of_Ride = 'July' or
+Month_Of_Ride = 'August' or
+Month_Of_Ride = 'September' or
+Month_Of_Ride = 'October' or
+Month_Of_Ride = 'November' or
+Month_Of_Ride = 'December'
+GROUP BY Month_Of_Ride, member_casual
+ORDER BY member_casual, Month_Of_Ride DESC
+
+SELECT member_casual, Day_Of_Week, COUNT(member_casual) AS Daily_Rides
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+Day_Of_Week = 'Sunday' or
+Day_Of_Week = 'Monday' or
+Day_Of_Week = 'Tuesday' or
+Day_Of_Week = 'Wednesday' or
+Day_Of_Week = 'Thursday' or
+Day_Of_Week = 'Friday' or
+Day_Of_Week = 'Saturday' 
+GROUP BY Day_Of_Week, member_casual
+ORDER BY member_casual, Day_Of_Week DESC
+
+SELECT member_casual, Time_Of_Ride, COUNT(member_casual) AS Total
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+Time_Of_Ride = 'Morning' or
+Time_Of_Ride = 'Afternoon' or
+Time_Of_Ride = 'Evening' or
+Time_Of_Ride = 'Night' 
+GROUP BY Time_Of_Ride, member_casual
+ORDER BY member_casual, Time_Of_Ride DESC
+
+-----Calculate the bike type used by year,month,day of the week, and time of day-----
+SELECT member_casual, rideable_type, COUNT(rideable_type) AS bike_total
+FROM dbo.ALL_divvy_tripdata
+GROUP BY rideable_type, member_casual
+ORDER BY member_casual, rideable_type
+
+SELECT member_casual, Month_Of_Ride, rideable_type, COUNT(rideable_type) AS Monthly_Bike_Type
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+Month_Of_Ride = 'January' or
+Month_Of_Ride = 'February' or
+Month_Of_Ride = 'March' or
+Month_Of_Ride = 'April' or
+Month_Of_Ride = 'May' or
+Month_Of_Ride = 'June' or
+Month_Of_Ride = 'July' or
+Month_Of_Ride = 'August' or
+Month_Of_Ride = 'September' or
+Month_Of_Ride = 'October' or
+Month_Of_Ride = 'November' or
+Month_Of_Ride = 'December'
+GROUP BY Month_Of_Ride, member_casual, rideable_type
+ORDER BY member_casual,rideable_type, Month_Of_Ride DESC
+
+SELECT member_casual, Day_Of_Week, rideable_type, COUNT(rideable_type) AS Daily_Bike_Type
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+Day_Of_Week = 'Sunday' or
+Day_Of_Week = 'Monday' or
+Day_Of_Week = 'Tuesday' or
+Day_Of_Week = 'Wednesday' or
+Day_Of_Week = 'Thursday' or
+Day_Of_Week = 'Friday' or
+Day_Of_Week = 'Saturday' 
+GROUP BY Day_Of_Week, rideable_type,member_casual, rideable_type
+ORDER BY member_casual,rideable_type, Day_Of_Week DESC
+
+SELECT member_casual, rideable_type, Time_Of_Ride, COUNT(Time_Of_Ride) AS Bike_Type_Time 
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+Time_Of_Ride = 'Morning' or
+Time_Of_Ride = 'Afternoon' or
+Time_Of_Ride = 'Evening' or
+Time_Of_Ride = 'Night' 
+GROUP BY Time_Of_Ride, rideable_type, member_casual, 
+ORDER BY member_casual,rideable_type, Month_Of_Ride DESC
+
+----- Total time on bike by for the year, month, day of the week and time-----
+
+SELECT member_casual, SUM(Total_Time) AS SUM_Time, AVG(Total_Time) AS AVG_Time
+FROM dbo.ALL_divvy_tripdata
+WHERE member_casual = 'casual' or
+member_casual = 'member'
+GROUP BY member_casual
+ORDER BY member_casual
+
+SELECT member_casual, Month_Of_Ride, SUM(Total_Time) AS SUM_Time, AVG(Total_Time) AS AVG_Time
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+Month_Of_Ride = 'January' or
+Month_Of_Ride = 'February' or
+Month_Of_Ride = 'March' or
+Month_Of_Ride = 'April' or
+Month_Of_Ride = 'May' or
+Month_Of_Ride = 'June' or
+Month_Of_Ride = 'July' or
+Month_Of_Ride = 'August' or
+Month_Of_Ride = 'September' or
+Month_Of_Ride = 'October' or
+Month_Of_Ride = 'November' or
+Month_Of_Ride = 'December'
+GROUP BY member_casual, Month_Of_Ride
+ORDER BY member_casual, Month_Of_Ride
+
+SELECT member_casual, Day_Of_Week, COUNT(Total_Time) AS Daily_Bike_Time, AVG(Total_Time) as AVG_Bike_Time
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+Day_Of_Week = 'Sunday' or
+Day_Of_Week = 'Monday' or
+Day_Of_Week = 'Tuesday' or
+Day_Of_Week = 'Wednesday' or
+Day_Of_Week = 'Thursday' or
+Day_Of_Week = 'Friday' or
+Day_Of_Week = 'Saturday' 
+GROUP BY Day_Of_Week,member_casual 
+ORDER BY member_casual, Day_Of_Week DESC
+
+SELECT member_casual, Time_Of_Ride, SUM(Total_Time) AS SUM_Time, AVG(Total_Time) AS AVG_Time, COUNT(Member_casual) as Total_Rides
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+Time_Of_Ride = 'Morning' or
+Time_Of_Ride = 'Afternoon' or
+Time_Of_Ride = 'Evening' or
+Time_Of_Ride = 'Night' 
+GROUP BY  Time_Of_Ride, member_casual 
+ORDER BY member_casual, Time_Of_Ride 
+
+----- Start and end stations used the most-----
+
+SELECT TOP(5)COUNT(start_station_name) AS Top_Start_Stations, member_casual, start_station_name
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+member_casual = 'casual'
+GROUP BY member_casual, start_station_name
+ORDER by Top_Start_Stations DESC
+
+SELECT TOP(5)COUNT(start_station_name) AS Top_Start_Stations, member_casual, start_station_name
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+member_casual = 'member' 
+GROUP BY member_casual, start_station_name
+ORDER by Top_Start_Stations DESC
+
+SELECT TOP(5)COUNT(end_station_name) AS Top_Start_Stations, member_casual, end_station_name
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+member_casual = 'casual'
+GROUP BY member_casual, end_station_name
+ORDER by Top_Start_Stations DESC
+
+SELECT TOP(5)COUNT(end_station_name) AS Top_Start_Stations, member_casual, end_station_name
+FROM dbo.ALL_divvy_tripdata
+WHERE 
+member_casual = 'member' 
+GROUP BY member_casual, end_station_name
+ORDER by Top_Start_Stations DESC
